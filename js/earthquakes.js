@@ -31,7 +31,7 @@ $(document).ajaxError(function(event, jqXHR, err){
 });
 
 $(function(){
-	$.getJSON('https://soda.demo.socrata.com/resource/earthquakes.json', getQuakes, addQuakeMarkers);
+	$.getJSON('https://soda.demo.socrata.com/resource/earthquakes.json', getQuakes);
 });
 
 function getQuakes() {
@@ -43,6 +43,7 @@ function getQuakes() {
 	    //set our global variable to the current set of quakes
 	    //so we can reference it later in another event
 	    gov.usgs.quakes = quakes;
+	    addQuakeMarkers(gov.usgs.quakes, gov.usgs.quakesMap);
 	}); //handle returned data function
 
 		gov.usgs.quakesMap = new google.maps.Map($('.map-container')[0], {
@@ -51,6 +52,7 @@ function getQuakes() {
 	    mapTypeId: google.maps.MapTypeId.TERRAIN,   //terrain map
 	    streetViewControl: false                    //no street view
 	});
+
 }
 
 function addQuakeMarkers(quakes, map) {
@@ -71,6 +73,22 @@ function addQuakeMarkers(quakes, map) {
 				    position: new google.maps.LatLng(quake.location.latitude, quake.location.longitude)
 				});
         } //if lat/lng
+
+        google.maps.event.addListener(quake.mapMarker, 'click', function(){
+    		//code that runs when user clicks on a marker
+    		//create an info window with the quake info
+    		if (gov.usgs.iw) {
+    				gov.usgs.iw.close();
+		    	}
+			gov.usgs.iw = new google.maps.InfoWindow({
+			    content: new Date(quake.datetime).toLocaleString() + 
+			        ': magnitude ' + quake.magnitude + ' at depth of ' + 
+			        quake.depth + ' meters'
+			});
+
+			//open the info window
+			gov.usgs.iw.open(map, this);
+		}); //click handler for marker
 
     } //end of loop
     
